@@ -2,11 +2,11 @@ import streamlit as st
 import requests
 
 # Set your OpenAI API key
-api_key = "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"
+api_key = "Key goes here"
 
-def generate_reminder(addiction_level):
+def generate_reminder(addiction_level, age, gender):
     try:
-        prompt = f"Write a motivational and supportive reminder to help someone reduce their social media addiction. Take into account their addiction level: {addiction_level}"
+        prompt = f"Write a motivational and supportive reminder to help someone reduce their social media addiction. Take into account their addiction level: {addiction_level}, age: {age}, and gender: {gender}."
 
         response = requests.post(
             "https://api.openai.com/v1/chat/completions",
@@ -33,9 +33,9 @@ def generate_reminder(addiction_level):
         print("Error:", e)
         return f"An error occurred while generating the reminder: {e}"
 
-def generate_goal_conversation(addiction_level, interests):
+def generate_goal_conversation(addiction_level, interests, age, gender):
     try:
-        prompt = f"Start a conversation to set goals and strategies for reducing social media usage. Take into account addiction level: {addiction_level} and interests: {interests}."
+        prompt = f"Start a conversation to set goals and strategies for reducing social media usage. Take into account addiction level: {addiction_level}, interests: {interests}, age: {age}, and gender: {gender}."
 
         response = requests.post(
             "https://api.openai.com/v1/chat/completions",
@@ -62,20 +62,34 @@ def generate_goal_conversation(addiction_level, interests):
         print("Error:", e)
         return f"An error occurred while generating the goal-setting conversation: {e}"
 
+# Function to map slider values to addiction levels
+def map_addiction_level(value):
+    levels = {1: "Mild", 5: "Moderate", 10: "Strong"}
+    return levels.get(value, str(value))
+
 # Streamlit App
 st.title("Social Media Limitation Assistant")
 
-addiction_level = st.selectbox("How strong is your social media addiction?", 
-                               ["Mild", "Moderate", "Strong"])
+addiction_level = st.slider(
+    "How strong is your social media addiction?",
+    min_value=1,
+    max_value=10,
+    step=1,
+    value=5
+)
+
+age = st.number_input("What is your age?", min_value=0, max_value=150, step=1, value=18)
+
+gender = st.radio("What is your gender?", ("Male", "Female", "Other"))
 
 interests = st.text_input("What are your hobbies or interests?")
 
 if st.button("Generate Reminder"):
-    reminder = generate_reminder(addiction_level)
+    reminder = generate_reminder(map_addiction_level(addiction_level), age, gender)
     st.write("Reminder:")
     st.write(reminder)
 
 if st.button("Start Goal Setting Conversation"):
-    goal_conversation = generate_goal_conversation(addiction_level, interests)
+    goal_conversation = generate_goal_conversation(map_addiction_level(addiction_level), interests, age, gender)
     st.write("Goal Setting Conversation:")
     st.write(goal_conversation)
